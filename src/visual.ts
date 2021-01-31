@@ -57,10 +57,39 @@ interface CategoryDataPoint {
     selectionId: ISelectionId;
 };
 
+/**
+ * An interface for reporting rendering events
+ */
+export interface IVisualEventService {
+    /**
+     * Should be called just before the actual rendering starts, 
+     * usually at the start of the update method
+     *
+     * @param options - the visual update options received as an update parameter
+     */
+    renderingStarted(options: VisualUpdateOptions): void;
+
+    /**
+     * Should be called immediately after rendering finishes successfully
+     * 
+     * @param options - the visual update options received as an update parameter
+     */
+    renderingFinished(options: VisualUpdateOptions): void;
+
+    /**
+     * Called when rendering fails, with an optional reason string
+     * 
+     * @param options - the visual update options received as an update parameter
+     * @param reason - the optional failure reason string
+     */
+    renderingFailed(options: VisualUpdateOptions, reason?: string): void;
+}
+
 enum Status {Play, Pause, Stop, Disabled, Refresh}
 
 import { VisualSettings } from "./settings";
 export class Visual implements IVisual {
+    private events: IVisualEventService;
     private host: IVisualHost;
     private selectionManager: ISelectionManager;
     private svg: Selection<SVGElement>;
@@ -82,6 +111,7 @@ export class Visual implements IVisual {
 
     constructor(options: VisualConstructorOptions) {
         this.host = options.host;
+        this.events = options.host.eventService;
         this.selectionManager = options.host.createSelectionManager();
         this.status = Status.Refresh;
         this.timers = [];
@@ -140,6 +170,8 @@ export class Visual implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
+        //Rendering has started
+        this.events.renderingStarted(options);
         //Get dataPoints
         this.dataPoints = [];
         let dataView: DataView = options.dataViews[0];
@@ -162,7 +194,7 @@ export class Visual implements IVisual {
                 const categorySelectionId = this.host.createSelectionIdBuilder().withCategory(categories[0], categoryIndex).createSelectionId();
                 if(categoryValue && categorySelectionId){ this.dataPoints.push({ category: categoryValue, selectionId: categorySelectionId });}
             }
-            
+
             //Get visualSettings
             this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
             
@@ -225,6 +257,8 @@ export class Visual implements IVisual {
                 });
             }
         }
+        //Rendering has finished
+        this.events.renderingFinished(options);
     }
 
     private adjustSVGDisplay(){
