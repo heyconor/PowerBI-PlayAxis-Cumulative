@@ -1,5 +1,5 @@
 {
-  "name": "visual",
+  "name": "playaxiscumulative",
   "scripts": {
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
