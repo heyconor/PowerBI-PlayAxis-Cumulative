@@ -1,0 +1,135 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Field",
+            "name": "category",
+            "kind": "Grouping"
+        }
+    ],
+    "objects": {
+        "transitionSettings": {
+            "displayName": "Animation Settings",
+            "properties": {
+                "autoStart": {
+                    "displayName": "Auto Start",
+                    "type": { "bool": true }
+                },
+                "loop": {
+                    "displayName": "Loop",
+                    "type": { "bool": true }
+                },
+                "cumulative": {
+                    "displayName": "Display Cumulative Values",
+                    "type": { "bool": true }
+                },
+                "timeInterval": {
+                    "displayName": "Time(ms)",
+                    "type": { "numeric": true }
+                }
+            }
+        },
+        "buttonSettingsPlayPause": {
+            "displayName": "Play & Pause Button",
+            "properties": {
+                "combine": {
+                    "displayName": "Combine buttons",
+                    "type": { "bool": true }
+                },
+                "playColor": {
+                    "displayName": "Play button color",
+                    "type": { "fill": { "solid": { "color": true } } }
+                },
+                "pauseColor": {
+                    "displayName": "Pause button color",
+                    "type": { "fill": { "solid": { "color": true } } }
+                }
+            }
+        },
+        "buttonSettingsStop": {
+            "displayName": "Stop Button",
+            "properties": {
+                "stopColor": {
+                    "displayName": "Stop button color",
+                    "type": { "fill": { "solid": { "color": true } } }
+                }
+            }
+        },
+        "buttonSettingsPreviousNext": {
+            "displayName": "Previous & Next Buttons",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": { "bool": true }
+                },
+                "previousColor": {
+                    "displayName": "Previous button color",
+                    "type": { "fill": { "solid": { "color": true } } }
+                },
+                "nextColor": {
+                    "displayName": "Next button color",
+                    "type": { "fill": { "solid": { "color": true } } }
+                }
+            }
+        },
+        "captionSettings": {
+            "displayName": "Caption",
+            "properties": {
+                "show": {
+                    "displayName": "Show",
+                    "type": { "bool": true }
+                },
+                "captionColor": {
+                    "displayName": "Color",
+                    "description": "The text color of the caption",
+                    "type": { "fill": { "solid": { "color": true } } }
+                },
+                "fontSize": {
+                   "displayName": "Text size",
+                   "description": "The text of the caption",
+                   "type": {
+                     "formatting": { "fontSize": true }
+                   }
+                },
+                "fontFamily": {
+                    "displayName": "Font Family",
+                    "description": "The font family of the caption",
+                    "type": {
+                      "formatting": { "fontFamily": true }
+                    }
+                },
+                "align": {
+                   "displayName": "Align",
+                   "description": "The text alignment of the caption",
+                   "type": {
+                         "enumeration": [
+                            { "displayName": "Right", "value": "right" },
+                            { "displayName": "Center", "value": "center" },
+                            { "displayName": "Left", "value": "left" }
+                         ]
+                     }
+                }
+            }
+        }
+    },
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "category": {
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "for": {
+                        "in": "category"
+                    },
+                    "dataReductionAlgorithm": {
+                        "top": {}
+                    }
+                }
+            }
+        }
+    ]
+}
