@@ -195,76 +195,83 @@ export class Visual implements IVisual {
             this.disableButtons();
             return;
         } else {
-            // categories
-            const categories = dataView.categorical.categories;
-            const categoriesCount = categories[0].values.length;
-            // iterate all categories to generate selection ids
-            for (let categoryIndex = 0; categoryIndex < categoriesCount; categoryIndex++) {
-                let categoryValue: powerbi.PrimitiveValue = categories[0].values[categoryIndex];
-                const categorySelectionId = this.host.createSelectionIdBuilder().withCategory(categories[0], categoryIndex).createSelectionId();
-                if(categoryValue && categorySelectionId){ this.dataPoints.push({ category: categoryValue, selectionId: categorySelectionId });}
-            }
+            try {
+                // categories
+                const categories = dataView.categorical.categories;
+                const categoriesCount = categories[0].values.length;
+                // iterate all categories to generate selection ids
+                for (let categoryIndex = 0; categoryIndex < categoriesCount; categoryIndex++) {
+                    let categoryValue: powerbi.PrimitiveValue = categories[0].values[categoryIndex];
+                    const categorySelectionId = this.host.createSelectionIdBuilder().withCategory(categories[0], categoryIndex).createSelectionId();
+                    if(categoryValue && categorySelectionId){ this.dataPoints.push({ category: categoryValue, selectionId: categorySelectionId });}
+                }
 
-            //Get visualSettings
-            this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
-            
-            //Validate visualSettings
-            this.validateVisualSettingInputs();
-            
-            //Set the animation to begin in a stopped state
-            this.status = Status.Refresh;
-            this.triggerStopAnimation();
+                //Get visualSettings
+                this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
+                
+                //Validate visualSettings
+                this.validateVisualSettingInputs();
+                
+                //Set the animation to begin in a stopped state
+                this.status = Status.Refresh;
+                this.triggerStopAnimation();
 
-            //Start playing without click 
-            if (this.visualSettings.transitionSettings.autoStart) { 
-                if(this.combinePlayPauseButtons){
-                    this.triggerPlayPauseAnimation();
-                } else {
-                    this.triggerPlayAnimation();
+                //Start playing without click 
+                if (this.visualSettings.transitionSettings.autoStart) { 
+                    if(this.combinePlayPauseButtons){
+                        this.triggerPlayPauseAnimation();
+                    } else {
+                        this.triggerPlayAnimation();
+                    }
+                }
+
+                //Change colors         
+                this.svg.selectAll("#play").attr("fill", this.visualSettings.buttonSettingsPlayPause.playColor);
+                this.svg.selectAll("#pause").attr("fill", this.visualSettings.buttonSettingsPlayPause.pauseColor);
+                this.svg.selectAll("#stop").attr("fill", this.visualSettings.buttonSettingsStop.stopColor);
+                if(this.showStepButtons){
+                    this.svg.selectAll("#previous").attr("fill", this.visualSettings.buttonSettingsPreviousNext.previousColor);
+                    this.svg.selectAll("#next").attr("fill", this.visualSettings.buttonSettingsPreviousNext.nextColor);
+                }
+                let captionColor = this.visualSettings.captionSettings.captionColor;      
+                this.svg.select("#label").attr("fill", captionColor);
+
+                //Change caption font size & family
+                let fontSize = this.visualSettings.captionSettings.fontSize;
+                let fontFamily = this.visualSettings.captionSettings.fontFamily;
+                this.svg.select("#label").attr("font-size", fontSize);
+                this.svg.select("#label").attr("font-family", fontFamily);
+
+                //Check if field name has changed and update accordingly
+                if (this.fieldName != options.dataViews[0].categorical.categories[0].source.displayName) {
+                    this.fieldName = options.dataViews[0].categorical.categories[0].source.displayName;
+                    this.resetAnimation(this.visualSettings.transitionSettings.autoStart);
+                }
+
+                //Adjust SVG display depending on what options are selected
+                this.adjustSVGDisplay();            
+
+                //Update selection if bookmarked was clicked
+                let ids = this.selectionManager.getSelectionIds() as ISelectionId[];
+                if(ids.length == 1) { //Number of selected ids should be 1 and status different than play (this.status != Status.Play)
+                    this.visualDataPoints.forEach((dataPoint, index) => {
+                        if(ids[0].includes(dataPoint.selectionId)) {
+                            this.lastSelected = index;
+                            if(this.combinePlayPauseButtons){
+                                this.triggerPlayPauseAnimation();
+                            } else {
+                                this.triggerPauseAnimation();
+                            }
+                            this.triggerStep(0);
+                            return;
+                        }
+                    });
                 }
             }
-
-            //Change colors         
-            this.svg.selectAll("#play").attr("fill", this.visualSettings.buttonSettingsPlayPause.playColor);
-            this.svg.selectAll("#pause").attr("fill", this.visualSettings.buttonSettingsPlayPause.pauseColor);
-            this.svg.selectAll("#stop").attr("fill", this.visualSettings.buttonSettingsStop.stopColor);
-            if(this.showStepButtons){
-                this.svg.selectAll("#previous").attr("fill", this.visualSettings.buttonSettingsPreviousNext.previousColor);
-                this.svg.selectAll("#next").attr("fill", this.visualSettings.buttonSettingsPreviousNext.nextColor);
-            }
-            let captionColor = this.visualSettings.captionSettings.captionColor;      
-            this.svg.select("#label").attr("fill", captionColor);
-
-            //Change caption font size & family
-            let fontSize = this.visualSettings.captionSettings.fontSize;
-            let fontFamily = this.visualSettings.captionSettings.fontFamily;
-            this.svg.select("#label").attr("font-size", fontSize);
-            this.svg.select("#label").attr("font-family", fontFamily);
-
-            //Check if field name has changed and update accordingly
-            if (this.fieldName != options.dataViews[0].categorical.categories[0].source.displayName) {
-                this.fieldName = options.dataViews[0].categorical.categories[0].source.displayName;
-                this.resetAnimation(this.visualSettings.transitionSettings.autoStart);
-            }
-
-            //Adjust SVG display depending on what options are selected
-            this.adjustSVGDisplay();            
-
-            //Update selection if bookmarked was clicked
-            let ids = this.selectionManager.getSelectionIds() as ISelectionId[];
-            if(ids.length == 1) { //Number of selected ids should be 1 and status different than play (this.status != Status.Play)
-                this.visualDataPoints.forEach((dataPoint, index) => {
-                    if(ids[0].includes(dataPoint.selectionId)) {
-                        this.lastSelected = index;
-                        if(this.combinePlayPauseButtons){
-                            this.triggerPlayPauseAnimation();
-                        } else {
-                            this.triggerPauseAnimation();
-                        }
-                        this.triggerStep(0);
-                        return;
-                    }
-                });
+            catch (e) {
+                //Rendering has failed
+                this.events.renderingFailed(options, JSON.stringify(e));
+                return;
             }
         }
         //Rendering has finished
