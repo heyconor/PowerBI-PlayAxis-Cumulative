@@ -11,3 +11,5 @@ Simple Power BI visual that works like a dynamic slicer, animating other visuals
 This visual accepts any parameter to be played and has some settings like colours, font size and transitions options, to be customized by the user.
 
 ![](assets/Screenshot1.png)
+
+![](assets/Screenshot2.png)
