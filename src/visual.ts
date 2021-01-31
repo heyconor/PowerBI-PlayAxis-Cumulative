@@ -88,6 +88,7 @@ export interface IVisualEventService {
 enum Status {Play, Pause, Stop, Disabled, Refresh}
 
 import { VisualSettings } from "./settings";
+import { selection } from "d3";
 export class Visual implements IVisual {
     private events: IVisualEventService;
     private host: IVisualHost;
@@ -156,7 +157,16 @@ export class Visual implements IVisual {
         });     
         this.svg.select("#next").on("click", () => {
             this.triggerStep(1);
-        });  
+        });
+        // Right-click context menu display
+        document.oncontextmenu = (mouseEvent) => {
+            let dataPoint: any = d3.select("svg").datum();
+            this.selectionManager.showContextMenu(dataPoint? dataPoint.selectionId : {}, {
+                x: mouseEvent.clientX,
+                y: mouseEvent.clientY
+            });
+            mouseEvent.preventDefault();
+        }
 
         this.resetAnimation(false);        
     }
