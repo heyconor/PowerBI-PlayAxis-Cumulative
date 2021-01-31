@@ -5,6 +5,7 @@ dist
 typings
 .api
 *.log
+sample_pbix
 
 # webpack stats
 webpack.statistics.dev.html

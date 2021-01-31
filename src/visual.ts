@@ -160,9 +160,9 @@ export class Visual implements IVisual {
             for (let categoryIndex = 0; categoryIndex < categoriesCount; categoryIndex++) {
                 let categoryValue: powerbi.PrimitiveValue = categories[0].values[categoryIndex];
                 const categorySelectionId = this.host.createSelectionIdBuilder().withCategory(categories[0], categoryIndex).createSelectionId();
-                this.dataPoints.push({ category: categoryValue, selectionId: categorySelectionId });
+                if(categoryValue && categorySelectionId){ this.dataPoints.push({ category: categoryValue, selectionId: categorySelectionId });}
             }
-
+            
             //Get visualSettings
             this.visualSettings = Visual.parseSettings(options && options.dataViews && options.dataViews[0]);
             
